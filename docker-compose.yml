@@ -9,8 +9,7 @@ services:
       - ./backend/results:/app/results
       - ./backend/heart_segmentation.db:/app/heart_segmentation.db
     restart: unless-stopped
-    ports:
-      - "8080:8080" # Exposed optionally if direct access is needed
+    # Removed ports mapping so it doesn't conflict with other backends on the VPS
 
   frontend:
     build: ./frontend
@@ -18,5 +17,5 @@ services:
     depends_on:
       - backend
     ports:
-      - "80:80" # Maps port 80 of Hostinger VPS to port 80 of Nginx
+      - "3000:80" # Maps port 3000 of Hostinger VPS to port 80 of Nginx
     restart: unless-stopped
