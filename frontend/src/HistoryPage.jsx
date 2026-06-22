@@ -66,7 +66,7 @@ export default function HistoryPage() {
                 <tr key={item.id} style={{ borderBottom: '1px solid var(--border)' }}>
                   <td style={{ padding: '1rem' }}>
                     <div style={{ position: 'relative', cursor: 'zoom-in', width: 'fit-content' }} onClick={() => setZoomImage(`${API_URL}/${item.result_image_path}`)}>
-                      <img src={`${API_URL}/${item.result_image_path}`} alt="Result" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }} crossOrigin="anonymous" />
+                      <img src={`${API_URL}/${item.result_image_path}`} alt="Result" style={{ width: '60px', height: '60px', objectFit: 'cover', borderRadius: '4px', border: '1px solid var(--border)' }} />
                     </div>
                   </td>
                   <td style={{ padding: '1rem' }}>{new Date(item.timestamp).toLocaleString()}</td>

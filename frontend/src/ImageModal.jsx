@@ -51,7 +51,7 @@ export default function ImageModal({ imageUrl, onClose }) {
                   <img 
                     src={imageUrl} 
                     alt="Zoomed View" 
-                    crossOrigin="anonymous" 
+
                     style={{ 
                       maxHeight: '80vh', 
                       maxWidth: '100%', 

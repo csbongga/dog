@@ -125,7 +125,6 @@ export default function UploadPage() {
                       <img 
                         src={previewUrl} 
                         alt="Preview" 
-                        crossOrigin="anonymous"
                         style={{ 
                           width: '100%', 
                           height: '100%',
@@ -221,7 +220,7 @@ export default function UploadPage() {
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'grab' }}>
                   <TransformWrapper initialScale={1} minScale={0.5} maxScale={5} wheel={{ step: 0.01 }}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                      <img src={`${API_URL}/${result.original_image_path}`} alt="Original" style={{ width: '100%', height: '100%', objectFit: 'contain' }} crossOrigin="anonymous" />
+                      <img src={`${API_URL}/${result.original_image_path}`} alt="Original" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </TransformComponent>
                   </TransformWrapper>
                   <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', pointerEvents: 'none' }}>🖱️ Scroll to zoom</div>
@@ -232,7 +231,7 @@ export default function UploadPage() {
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'grab' }}>
                   <TransformWrapper initialScale={1} minScale={0.5} maxScale={5} wheel={{ step: 0.01 }}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                      <img src={`${API_URL}/${result.result_image_path}`} alt="Result" style={{ width: '100%', height: '100%', objectFit: 'contain' }} crossOrigin="anonymous" />
+                      <img src={`${API_URL}/${result.result_image_path}`} alt="Result" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </TransformComponent>
                   </TransformWrapper>
                   <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', pointerEvents: 'none' }}>🖱️ Scroll to zoom</div>
