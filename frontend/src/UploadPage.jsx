@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Upload, Loader, Download } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = '/api';
 
 export default function UploadPage() {
   const [file, setFile] = useState(null);

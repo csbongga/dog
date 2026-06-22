@@ -3,7 +3,7 @@ import axios from 'axios';
 import { Trash2 } from 'lucide-react';
 import ImageModal from './ImageModal';
 
-const API_URL = 'http://localhost:8080';
+const API_URL = '/api';
 
 export default function HistoryPage() {
   const [history, setHistory] = useState([]);

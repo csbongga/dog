@@ -1,0 +1,22 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    container_name: dog_backend
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/results:/app/results
+      - ./backend/heart_segmentation.db:/app/heart_segmentation.db
+    restart: unless-stopped
+    ports:
+      - "8080:8080" # Exposed optionally if direct access is needed
+
+  frontend:
+    build: ./frontend
+    container_name: dog_frontend
+    depends_on:
+      - backend
+    ports:
+      - "80:80" # Maps port 80 of Hostinger VPS to port 80 of Nginx
+    restart: unless-stopped
