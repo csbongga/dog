@@ -1,0 +1,28 @@
+# Dependencies
+node_modules/
+venv/
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Build and Temp
+dist/
+dist-ssr/
+*.local
+.env
+
+# Database and Generated Files
+backend/history.db
+backend/uploads/*
+!backend/uploads/.gitkeep
+backend/results/*
+!backend/results/.gitkeep
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
