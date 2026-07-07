@@ -293,10 +293,11 @@ export default function UploadPage() {
                 </h4>
                 
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: isEditing ? '2px dashed var(--primary)' : '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: isEditing ? 'crosshair' : 'grab' }}>
-                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} wheel={{ step: 0.05 }} disabled={isEditing}>
+                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} wheel={{ step: 0.005 }} disabled={isEditing}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
                       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img 
+                          key={result.original_image_path}
                           src={`${API_URL}/${result.original_image_path}`} 
                           alt="Original" 
                           style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
@@ -342,9 +343,9 @@ export default function UploadPage() {
               <div style={{ textAlign: 'center' }}>
                 <h4 style={{ marginBottom: '1rem' }}>Segmented Image</h4>
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'grab' }}>
-                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={5} wheel={{ step: 0.01 }}>
+                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} wheel={{ step: 0.005 }}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                      <img src={`${API_URL}/${result.result_image_path}`} alt="Result" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      <img key={result.result_image_path} src={`${API_URL}/${result.result_image_path}`} alt="Result" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </TransformComponent>
                   </TransformWrapper>
                   <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', pointerEvents: 'none' }}>🖱️ Scroll to zoom</div>
