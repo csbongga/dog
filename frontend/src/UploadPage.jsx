@@ -176,7 +176,7 @@ export default function UploadPage() {
               <h3 style={{ marginBottom: '1rem' }}>File: {file.name}</h3>
               {previewUrl && (
                 <div style={{ margin: '0 auto 2rem auto', width: '400px', height: '400px', position: 'relative', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'grab' }}>
-                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={5} wheel={{ step: 0.01 }}>
+                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
                       <img 
                         src={previewUrl} 
@@ -293,7 +293,7 @@ export default function UploadPage() {
                 </h4>
                 
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: isEditing ? '2px dashed var(--primary)' : '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: isEditing ? 'crosshair' : 'grab' }}>
-                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} wheel={{ step: 0.005 }} disabled={isEditing}>
+                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} disabled={isEditing}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
                       <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                         <img 
@@ -343,7 +343,7 @@ export default function UploadPage() {
               <div style={{ textAlign: 'center' }}>
                 <h4 style={{ marginBottom: '1rem' }}>Segmented Image</h4>
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'grab' }}>
-                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} wheel={{ step: 0.005 }}>
+                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
                       <img key={result.result_image_path} src={`${API_URL}/${result.result_image_path}`} alt="Result" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                     </TransformComponent>
