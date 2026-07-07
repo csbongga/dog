@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Upload, Loader, Download, Edit2, Check, X } from 'lucide-react';
+import { Upload, Loader, Download, Edit2, Check, X, PlusCircle } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 const API_URL = '/api';
@@ -148,6 +148,22 @@ export default function UploadPage() {
     setDraggedPointIndex(null);
   };
 
+  const handleAddMorePoints = () => {
+    if (polygonPoints.length < 3) return;
+    const newPoints = [];
+    for (let i = 0; i < polygonPoints.length; i++) {
+      const p1 = polygonPoints[i];
+      const p2 = polygonPoints[(i + 1) % polygonPoints.length];
+      const midPoint = [
+        Math.round((p1[0] + p2[0]) / 2),
+        Math.round((p1[1] + p2[1]) / 2)
+      ];
+      newPoints.push(p1);
+      newPoints.push(midPoint);
+    }
+    setPolygonPoints(newPoints);
+  };
+
   return (
     <div className="animate-fade-in" onMouseUp={handleSvgMouseUp} onMouseLeave={handleSvgMouseUp}>
       {!result ? (
@@ -282,6 +298,9 @@ export default function UploadPage() {
                     </button>
                   ) : (
                     <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem', background: 'rgba(59, 130, 246, 0.1)', color: 'var(--primary)' }} onClick={handleAddMorePoints}>
+                        <PlusCircle size={14}/> + Points
+                      </button>
                       <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', background: '#22c55e' }} onClick={handleUpdateMask}>
                         <Check size={14}/> Save
                       </button>
