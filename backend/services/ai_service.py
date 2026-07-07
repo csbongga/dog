@@ -75,6 +75,21 @@ def run_segmentation(image_path: str, output_path: str, pixel_spacing_x: float, 
             # Convert to cm^2
             area_cm2 = area_mm2 / 100.0
             
+            polygon_points = []
+            if len(contours) > 0:
+                # Find the largest contour by area
+                largest_contour = max(contours, key=cv2.contourArea)
+                
+                # Simplify the contour for frontend editing
+                # epsilon is the max distance from contour to approx contour
+                epsilon = 0.005 * cv2.arcLength(largest_contour, True)
+                approx = cv2.approxPolyDP(largest_contour, epsilon, True)
+                
+                # Convert to list of [x, y]
+                for point in approx:
+                    x, y = point[0]
+                    polygon_points.append([int(x), int(y)])
+            
             # 4. Draw the new eroded mask onto the image (Visual Overlay)
             color = (0, 0, 255) # Red (BGR)
             
@@ -84,4 +99,10 @@ def run_segmentation(image_path: str, output_path: str, pixel_spacing_x: float, 
     # Save the final image (with or without masks)
     cv2.imwrite(output_path, img_out)
             
-    return {"area_cm2": round(area_cm2, 2), "result_path": output_path}
+    return {
+        "area_cm2": round(area_cm2, 2), 
+        "result_path": output_path,
+        "polygon_points": polygon_points,
+        "image_width": w,
+        "image_height": h
+    }

@@ -91,7 +91,64 @@ async def upload_dicom(
     db.commit()
     db.refresh(history)
     
-    return history
+    return {
+        "id": history.id,
+        "file_name": history.file_name,
+        "custom_name": history.custom_name,
+        "original_image_path": history.original_image_path,
+        "result_image_path": history.result_image_path,
+        "area_cm2": history.area_cm2,
+        "timestamp": history.timestamp,
+        "polygon_points": ai_result.get("polygon_points", []),
+        "image_width": ai_result.get("image_width", 0),
+        "image_height": ai_result.get("image_height", 0),
+        "pixel_spacing_x": spacing["pixel_spacing_x"],
+        "pixel_spacing_y": spacing["pixel_spacing_y"]
+    }
+
+from pydantic import BaseModel
+from typing import List
+import cv2
+import numpy as np
+
+class UpdateMaskRequest(BaseModel):
+    history_id: int
+    polygon_points: List[List[int]]
+    pixel_spacing_x: float
+    pixel_spacing_y: float
+
+@app.post("/update_mask")
+def update_mask(req: UpdateMaskRequest, db: Session = Depends(get_db)):
+    item = db.query(AnalysisHistory).filter(AnalysisHistory.id == req.history_id).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Item not found")
+        
+    original_img = cv2.imread(item.original_image_path)
+    if original_img is None:
+        raise HTTPException(status_code=500, detail="Original image not found")
+        
+    # Convert points to contour format
+    contour = np.array(req.polygon_points, dtype=np.int32)
+    
+    # Calculate area
+    total_pixels = cv2.contourArea(contour)
+    area_mm2 = total_pixels * req.pixel_spacing_x * req.pixel_spacing_y
+    area_cm2 = round(area_mm2 / 100.0, 2)
+    
+    # Redraw the mask on the image
+    img_out = original_img.copy()
+    color = (0, 0, 255)
+    cv2.drawContours(img_out, [contour], -1, color, 2, cv2.LINE_AA)
+    
+    # Overwrite the result image
+    cv2.imwrite(item.result_image_path, img_out)
+    
+    # Update DB
+    item.area_cm2 = area_cm2
+    db.commit()
+    db.refresh(item)
+    
+    return {"area_cm2": area_cm2, "result_image_path": item.result_image_path}
 
 @app.get("/history")
 def get_history(db: Session = Depends(get_db)):

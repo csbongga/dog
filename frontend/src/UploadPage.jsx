@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import axios from 'axios';
-import { Upload, Loader, Download } from 'lucide-react';
+import { Upload, Loader, Download, Edit2, Check, X } from 'lucide-react';
 import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 
 const API_URL = '/api';
@@ -13,7 +13,12 @@ export default function UploadPage() {
   const [brightness, setBrightness] = useState(1.0);
   const [contrast, setContrast] = useState(1.0);
   const [customName, setCustomName] = useState('');
-  const [zoomImage, setZoomImage] = useState(null);
+  
+  // Interactive Polygon State
+  const [polygonPoints, setPolygonPoints] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
+  const [draggedPointIndex, setDraggedPointIndex] = useState(null);
+  const svgRef = useRef(null);
   const fileInputRef = useRef(null);
 
   const handleFileChange = async (e) => {
@@ -21,6 +26,7 @@ export default function UploadPage() {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
       setResult(null);
+      setIsEditing(false);
       await generatePreview(selectedFile);
     }
   };
@@ -35,6 +41,7 @@ export default function UploadPage() {
       const selectedFile = e.dataTransfer.files[0];
       setFile(selectedFile);
       setResult(null);
+      setIsEditing(false);
       await generatePreview(selectedFile);
     }
   };
@@ -66,8 +73,33 @@ export default function UploadPage() {
         headers: { 'Content-Type': 'multipart/form-data' }
       });
       setResult(res.data);
+      setPolygonPoints(res.data.polygon_points || []);
+      setIsEditing(false);
     } catch (err) {
       alert("Failed to upload and process file.");
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateMask = async () => {
+    setLoading(true);
+    try {
+      const res = await axios.post(`${API_URL}/update_mask`, {
+        history_id: result.id,
+        polygon_points: polygonPoints,
+        pixel_spacing_x: result.pixel_spacing_x,
+        pixel_spacing_y: result.pixel_spacing_y
+      });
+      setResult(prev => ({
+        ...prev,
+        area_cm2: res.data.area_cm2,
+        result_image_path: res.data.result_image_path + `?t=${Date.now()}` // force reload image
+      }));
+      setIsEditing(false);
+    } catch (err) {
+      alert("Failed to update mask.");
       console.error(err);
     } finally {
       setLoading(false);
@@ -92,8 +124,32 @@ export default function UploadPage() {
     }
   };
 
+  // SVG Mouse Events for Dragging
+  const getSvgCoordinates = (e) => {
+    const svg = svgRef.current;
+    if (!svg) return [0, 0];
+    const pt = svg.createSVGPoint();
+    pt.x = e.clientX;
+    pt.y = e.clientY;
+    const svgP = pt.matrixTransform(svg.getScreenCTM().inverse());
+    return [Math.round(svgP.x), Math.round(svgP.y)];
+  };
+
+  const handleSvgMouseMove = (e) => {
+    if (draggedPointIndex !== null && isEditing) {
+       const [x, y] = getSvgCoordinates(e);
+       const newPoints = [...polygonPoints];
+       newPoints[draggedPointIndex] = [x, y];
+       setPolygonPoints(newPoints);
+    }
+  };
+
+  const handleSvgMouseUp = () => {
+    setDraggedPointIndex(null);
+  };
+
   return (
-    <div className="animate-fade-in">
+    <div className="animate-fade-in" onMouseUp={handleSvgMouseUp} onMouseLeave={handleSvgMouseUp}>
       {!result ? (
         <div className="glass" style={{ padding: '3rem' }}>
           <h1 style={{ textAlign: 'center', marginBottom: '2rem' }}>DICOM Heart Segmentation</h1>
@@ -214,18 +270,75 @@ export default function UploadPage() {
               {result.custom_name && <p style={{ fontWeight: 'bold', fontSize: '1.2rem', color: 'var(--primary)', margin: 0 }}>Name: {result.custom_name}</p>}
             </div>
             
+            {loading && <div style={{ textAlign: 'center', padding: '1rem' }}><span>⏳</span> Updating Area...</div>}
+            
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem' }}>
               <div style={{ textAlign: 'center' }}>
-                <h4 style={{ marginBottom: '1rem' }}>Original Image</h4>
-                <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'grab' }}>
-                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={5} wheel={{ step: 0.01 }}>
+                <h4 style={{ marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                  Original Image
+                  {!isEditing ? (
+                    <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => setIsEditing(true)}>
+                      <Edit2 size={14}/> Edit Mask
+                    </button>
+                  ) : (
+                    <div style={{ display: 'flex', gap: '0.5rem' }}>
+                      <button className="btn-primary" style={{ padding: '4px 8px', fontSize: '0.8rem', background: '#22c55e' }} onClick={handleUpdateMask}>
+                        <Check size={14}/> Save
+                      </button>
+                      <button className="btn-secondary" style={{ padding: '4px 8px', fontSize: '0.8rem' }} onClick={() => {setIsEditing(false); setPolygonPoints(result.polygon_points);}}>
+                        <X size={14}/> Cancel
+                      </button>
+                    </div>
+                  )}
+                </h4>
+                
+                <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: isEditing ? '2px dashed var(--primary)' : '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: isEditing ? 'crosshair' : 'grab' }}>
+                  <TransformWrapper initialScale={1} minScale={0.5} maxScale={10} wheel={{ step: 0.05 }} disabled={isEditing}>
                     <TransformComponent wrapperStyle={{ width: '100%', height: '100%' }}>
-                      <img src={`${API_URL}/${result.original_image_path}`} alt="Original" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <img 
+                          src={`${API_URL}/${result.original_image_path}`} 
+                          alt="Original" 
+                          style={{ maxWidth: '100%', maxHeight: '100%', objectFit: 'contain' }} 
+                        />
+                        {isEditing && polygonPoints.length > 0 && (
+                          <svg 
+                            ref={svgRef}
+                            viewBox={`0 0 ${result.image_width} ${result.image_height}`}
+                            preserveAspectRatio="xMidYMid meet"
+                            style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', zIndex: 10 }}
+                            onMouseMove={handleSvgMouseMove}
+                          >
+                            <polygon 
+                              points={polygonPoints.map(p => p.join(',')).join(' ')}
+                              fill="rgba(255, 0, 0, 0.2)"
+                              stroke="red"
+                              strokeWidth="3"
+                            />
+                            {polygonPoints.map((point, index) => (
+                              <circle
+                                key={index}
+                                cx={point[0]}
+                                cy={point[1]}
+                                r="12"
+                                fill="white"
+                                stroke="red"
+                                strokeWidth="3"
+                                style={{ cursor: 'move' }}
+                                onMouseDown={(e) => { e.stopPropagation(); setDraggedPointIndex(index); }}
+                              />
+                            ))}
+                          </svg>
+                        )}
+                      </div>
                     </TransformComponent>
                   </TransformWrapper>
-                  <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', pointerEvents: 'none' }}>🖱️ Scroll to zoom</div>
+                  <div style={{ position: 'absolute', top: '10px', right: '10px', background: 'rgba(0,0,0,0.5)', color: 'white', padding: '4px 8px', borderRadius: '4px', fontSize: '0.8rem', pointerEvents: 'none' }}>
+                    {isEditing ? '🔴 Drag white dots to adjust mask' : '🖱️ Scroll to zoom'}
+                  </div>
                 </div>
               </div>
+              
               <div style={{ textAlign: 'center' }}>
                 <h4 style={{ marginBottom: '1rem' }}>Segmented Image</h4>
                 <div style={{ position: 'relative', width: '100%', aspectRatio: '1/1', border: '1px solid var(--border)', borderRadius: '8px', overflow: 'hidden', cursor: 'grab' }}>
