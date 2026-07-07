@@ -34,8 +34,8 @@ def run_segmentation(image_path: str, output_path: str, pixel_spacing_x: float, 
     
     # Configuration for erosion (shrinkage)
     # Increase these to shrink the mask more, decrease to shrink less.
-    EROSION_KERNEL_SIZE = 5
-    EROSION_ITERATIONS = 2
+    EROSION_KERNEL_SIZE = 7
+    EROSION_ITERATIONS = 4
     
     for r in results:
         # Calculate area if masks exist
