@@ -53,11 +53,17 @@ def run_segmentation(image_path: str, output_path: str, pixel_spacing_x: float, 
             eroded_mask = cv2.erode(binary_mask, kernel, iterations=EROSION_ITERATIONS)
             
             # Smooth the edges to remove pixelated corners
-            smoothed_mask = cv2.GaussianBlur(eroded_mask, (15, 15), 0)
+            # Dynamic blur size based on image resolution
+            blur_size = max(31, int(min(w, h) * 0.03))
+            if blur_size % 2 == 0:
+                blur_size += 1
+                
+            smoothed_mask = cv2.GaussianBlur(eroded_mask, (blur_size, blur_size), 0)
             _, eroded_mask = cv2.threshold(smoothed_mask, 127, 255, cv2.THRESH_BINARY)
             
             # 3. Calculate new area from the eroded mask
-            contours, _ = cv2.findContours(eroded_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+            # Use CHAIN_APPROX_NONE to prevent straight polygonal lines (sharp angles)
+            contours, _ = cv2.findContours(eroded_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_NONE)
             
             total_pixels = 0.0
             for contour in contours:
@@ -72,8 +78,8 @@ def run_segmentation(image_path: str, output_path: str, pixel_spacing_x: float, 
             # 4. Draw the new eroded mask onto the image (Visual Overlay)
             color = (0, 0, 255) # Red (BGR)
             
-            # Draw crisp contour boundaries on top
-            cv2.drawContours(img_out, contours, -1, color, 2)
+            # Draw crisp contour boundaries on top with anti-aliasing
+            cv2.drawContours(img_out, contours, -1, color, 2, cv2.LINE_AA)
             
     # Save the final image (with or without masks)
     cv2.imwrite(output_path, img_out)
