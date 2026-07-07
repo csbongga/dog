@@ -67,13 +67,6 @@ def run_segmentation(image_path: str, output_path: str, pixel_spacing_x: float, 
             
             # 4. Draw the new eroded mask onto the image (Visual Overlay)
             color = (0, 0, 255) # Red (BGR)
-            alpha = 0.4
-            
-            # Apply transparent fill
-            mask_indices = eroded_mask == 255
-            overlay = img_out.copy()
-            overlay[mask_indices] = color
-            cv2.addWeighted(overlay, alpha, img_out, 1 - alpha, 0, img_out)
             
             # Draw crisp contour boundaries on top
             cv2.drawContours(img_out, contours, -1, color, 2)
