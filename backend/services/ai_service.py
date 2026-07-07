@@ -49,8 +49,12 @@ def run_segmentation(image_path: str, output_path: str, pixel_spacing_x: float, 
                 cv2.fillPoly(binary_mask, [contour], 255)
                 
             # 2. Erode the mask (shrink it)
-            kernel = np.ones((EROSION_KERNEL_SIZE, EROSION_KERNEL_SIZE), np.uint8)
+            kernel = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (EROSION_KERNEL_SIZE, EROSION_KERNEL_SIZE))
             eroded_mask = cv2.erode(binary_mask, kernel, iterations=EROSION_ITERATIONS)
+            
+            # Smooth the edges to remove pixelated corners
+            smoothed_mask = cv2.GaussianBlur(eroded_mask, (15, 15), 0)
+            _, eroded_mask = cv2.threshold(smoothed_mask, 127, 255, cv2.THRESH_BINARY)
             
             # 3. Calculate new area from the eroded mask
             contours, _ = cv2.findContours(eroded_mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
